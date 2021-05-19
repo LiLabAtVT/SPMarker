@@ -385,7 +385,7 @@ def main(argv=None):
     else:
         cmd = 'python ' + s3_pipeline_identify_SHAP_marker_script + \
               ' -d ' + Step3_identify_marker_w_dir + \
-              ' -o ' + output_dir + \
+              ' -o ' + opt_SHAP_markers_dir + \
               ' -m ' + Step2_train_models_o_dir + '/rf_model.pkl' + \
               ' -exp_fl ' + Step2_train_models_o_dir + '/opt_exp_indep_test.csv' + \
               ' -meta_fl ' + Step2_train_models_o_dir + '/opt_meta_indep_test.csv' + \
