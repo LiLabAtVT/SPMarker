@@ -195,9 +195,12 @@ def main(argv=None):
 
     ##obtain the path of utils
     run_script_path = __file__
-    mt = re.match('(.+)/.+',run_script_path)
-    run_script_dir = mt.group(1)
-    utils_dir = run_script_dir + '/utils'
+    if '/' in run_script_path:
+        mt = re.match('(.+)/.+',run_script_path)
+        run_script_dir = mt.group(1)
+        utils_dir = run_script_dir + '/utils'
+    else:
+        utils_dir = './utils'
 
     ############
     input_mtx_fl = args.exp_matrix
