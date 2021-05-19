@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+##updating 051821 add the SHAP value to the output fl
 ##updating 031521 check string to be float
 ##updation 052620 change all the cell type name
 ##updation 052620 calculate the how many features belong to shap and how many features belong to known markers
@@ -201,7 +202,6 @@ def generate_dir_to_store_sort_for_top_uni_fts (select_top_cell_type_sort_uni_fs
 
     ##updation 052620
     store_final_unis_top_feat_count_list = []
-
     ##store final top marker without known markers  eg. top 20 markers are all new
     store_final_top_marker_no_known_line_list = []
     ##store final top marker with known markers
@@ -250,14 +250,14 @@ def generate_dir_to_store_sort_for_top_uni_fts (select_top_cell_type_sort_uni_fs
                             ##updation 052620
                             top_ori_marker_num += 1
 
-                            with_known_marker_line = col[1] + '\t' + cell_type_nm + '\t' + 'Known'
+                            with_known_marker_line = col[1] + '\t' + cell_type_nm + '\t' + 'Known' + '\t' + col[2]
                             store_final_top_marker_with_known_line_list.append(with_known_marker_line)
 
                         else:
                             ##updation 052620
                             top_new_marker_num += 1
 
-                            with_known_marker_line = col[1] + '\t' + cell_type_nm + '\t' + 'Novel'
+                            with_known_marker_line = col[1] + '\t' + cell_type_nm + '\t' + 'Novel' + '\t' + col[2]
                             store_final_top_marker_with_known_line_list.append(with_known_marker_line)
 
                 ##updation 052420
@@ -268,7 +268,8 @@ def generate_dir_to_store_sort_for_top_uni_fts (select_top_cell_type_sort_uni_fs
                         if shap_count <= int(input_select_top_feat_num):
                             store_top_feat_shap_uptop_num_line_list.append(eachline)
 
-                            no_known_marker_line = col[1] + '\t' + cell_type_nm + '\t' + 'Novel'
+                            ##updating 051821 add the value
+                            no_known_marker_line = col[1] + '\t' + cell_type_nm + '\t' + 'Novel' + '\t' + col[2]
                             store_final_top_marker_no_known_line_list.append(no_known_marker_line)
 
         ##updation 052620 calculate the unis shap and orim markers

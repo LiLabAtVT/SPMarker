@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+##updating 051821 collect the SVM markers output
 ##updation060420 add other scripts to generate other datasets
 ##eg. the number of fts in each cell type how many cells are come from ORIM
 ##updation060320 debug
@@ -208,7 +209,8 @@ def create_sort_svmvalue (input_working_dir ,temp_assign_cell_type_fl):
 
     return (select_top_cell_type_sort_uni_fs_dir)
 
-
+##udpating 051921
+####this function does not work now we will generate
 ##updation 051720 unique fts version
 def generate_dir_to_store_sort_for_top_uni_fts (select_top_cell_type_sort_uni_fs_dir ,input_select_top_feat_num
                                                ,input_marker_gene_fl,check_known_marker):
@@ -291,6 +293,8 @@ def generate_dir_to_store_sort_for_top_uni_fts (select_top_cell_type_sort_uni_fs
                             collect_all_feat_svm_uptop_num_dic[col[1]] = 1
 
 
+
+
         with open (cell_top_feat_dir + '/opt_top_' + input_select_top_feat_num + '_' + cell_type_nm + '_sort.txt'
                   ,'w+') as opt:
             for eachline in store_top_feat_line_list:
@@ -317,14 +321,134 @@ def generate_dir_to_store_sort_for_top_uni_fts (select_top_cell_type_sort_uni_fs
         for eachft in collect_all_feat_svm_uptop_num_dic:
             opt.write(eachft + '\n')
 
+##updating 051921 use the same scripts as SHAP to generate output
+def generate_dir_to_store_sort_for_top_uni_fts_add_markerres (select_top_cell_type_sort_uni_fs_dir,
+                                                input_select_top_feat_num,input_marker_gene_fl,check_known_marker):
+
+
+    ##store the gene information
+    store_marker_gene_dic = {}
+    if check_known_marker == 'yes':
+        count = 0
+        with open (input_marker_gene_fl ,'r') as ipt:
+            for eachline in ipt:
+                eachline = eachline.strip('\n')
+                count += 1
+                if count != 1:
+                    col = eachline.strip().split('\t')
+                    store_marker_gene_dic[col[0]] = 1
+
+    ##updation 052620
+    store_final_unis_top_feat_count_list = []
+
+    ##store final top marker without known markers  eg. top 20 markers are all new
+    store_final_top_marker_no_known_line_list = []
+    ##store final top marker with known markers
+    store_final_top_marker_with_known_line_list = []
+
+    sort_fl_list = glob.glob(select_top_cell_type_sort_uni_fs_dir + '/*')
+    for eachsort_fl in sort_fl_list:
+        mt = re.match('.+/(.+)', eachsort_fl)
+        fl_nm = mt.group(1)
+        mt = re.match('opt_(.+)_uni_fts_sort\.txt', fl_nm)
+        cell_type = mt.group(1)
+
+        ##updation 052620
+        cell_type_nm = ''
+        if cell_type == 'Meri..Xylem':
+            cell_type_nm = 'Meri_Xylem'
+        if cell_type == 'Phloem..CC.':
+            cell_type_nm = 'Phloem_CC'
+        if cell_type == 'Cortext':
+            cell_type_nm = 'Cortex'
+        if cell_type != 'Meri..Xylem' and cell_type != 'Phloem..CC.' and cell_type != 'Cortext':
+            cell_type_nm = cell_type
+
+        ##updation 052620
+        top_ori_marker_num = 0
+        top_new_marker_num = 0
+
+        ##updation 052420
+        store_top_feat_shap_uptop_num_line_list = []
+
+        ##updation 052420
+        shap_count = -1
+
+        count = -1
+        with open(eachsort_fl, 'r') as ipt:
+            for eachline in ipt:
+                eachline = eachline.strip('\n')
+                col = eachline.strip().split()
+
+                count += 1
+                if count != 0:
+                    if count <= int(input_select_top_feat_num):
+
+                        if col[1] in store_marker_gene_dic:
+
+                            ##updation 052620
+                            top_ori_marker_num += 1
+
+                            with_known_marker_line = col[1] + '\t' + cell_type_nm + '\t' + 'Known' + '\t' + col[2]
+                            store_final_top_marker_with_known_line_list.append(with_known_marker_line)
+
+                        else:
+                            ##updation 052620
+                            top_new_marker_num += 1
+
+                            with_known_marker_line = col[1] + '\t' + cell_type_nm + '\t' + 'Novel' + '\t' + col[2]
+                            store_final_top_marker_with_known_line_list.append(with_known_marker_line)
+
+                ##updation 052420
+                ##do not contain any marker gene and select the top 20
+                if col[1] not in store_marker_gene_dic:
+                    shap_count += 1
+                    if shap_count != 0:
+                        if shap_count <= int(input_select_top_feat_num):
+                            store_top_feat_shap_uptop_num_line_list.append(eachline)
+
+                            ##updating 051821 add the value
+                            no_known_marker_line = col[1] + '\t' + cell_type_nm + '\t' + 'Novel' + '\t' + col[2]
+                            store_final_top_marker_no_known_line_list.append(no_known_marker_line)
+
+        ##updation 052620 calculate the unis shap and orim markers
+        ##store top marker gene information
+        final_line = cell_type_nm + '\t' + 'Known_maker_feature' + '\t' + str(top_ori_marker_num) + '\n' + \
+                     cell_type_nm + '\t' + 'Novel_marker_feature' + '\t' + str(top_new_marker_num)
+        store_final_unis_top_feat_count_list.append(final_line)
+
+
+    return (store_final_top_marker_no_known_line_list,store_final_top_marker_with_known_line_list,store_final_unis_top_feat_count_list)
+
+
 
 temp_sort_svm_dir,store_all_feat_dic,store_cell_type_dic = average_imp_cross (input_imp_five_cross_dir,input_working_dir)
 
 assign_cell_type_to_feature(temp_sort_svm_dir, store_all_feat_dic, input_working_dir)
 select_top_cell_type_sort_uni_fs_dir = create_sort_svmvalue(input_working_dir,input_working_dir + '/temp_assign_cell_type_fl.txt')
 
-generate_dir_to_store_sort_for_top_uni_fts(select_top_cell_type_sort_uni_fs_dir, input_select_top_feat_num,
-                                           input_marker_gene_fl,check_known_marker)
+#generate_dir_to_store_sort_for_top_uni_fts(select_top_cell_type_sort_uni_fs_dir, input_select_top_feat_num,
+#                                           input_marker_gene_fl,check_known_marker)
+
+##udpating 051921 write resutls same as SHAP markers
+store_final_top_marker_no_known_line_list, \
+    store_final_top_marker_with_known_line_list, \
+    store_final_unis_top_feat_count_list = generate_dir_to_store_sort_for_top_uni_fts_add_markerres (select_top_cell_type_sort_uni_fs_dir,
+                                                input_select_top_feat_num,input_marker_gene_fl,check_known_marker)
+
+##write out results to the output_dir
+with open (input_output_dir + '/opt_top_' + str(input_select_top_feat_num) + '_novel_marker.txt','w+') as opt:
+    for eachline in store_final_top_marker_no_known_line_list:
+        opt.write(eachline + '\n')
+
+with open (input_output_dir + '/opt_top_' + str(input_select_top_feat_num) + '_novel_known_marker.txt', 'w+') as opt:
+    for eachline in store_final_top_marker_with_known_line_list:
+        opt.write(eachline + '\n')
+
+with open(input_output_dir + '/opt_top_' + str(input_select_top_feat_num) + '_summary_marker_composition.txt', 'w+') as opt:
+    for eachline in store_final_unis_top_feat_count_list:
+        opt.write(eachline + '\n')
+
 
 
 
