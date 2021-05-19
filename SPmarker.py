@@ -57,7 +57,7 @@ def get_parsed_args():
     parser.add_argument("-kmar_fl", dest="known_marker_fl", help="Provide the known marker gene list file. Once users provide this file, "
                                                                  "they will obtain a file that contains novel marker genes.")
 
-    parser.add_argument('-unknown_mtx_fl', dest='unknown_cell_fl', help='Provide unknown cell matrix file that is need to be assigned with cell type.')
+    parser.add_argument('-ukn_mtx', dest='unknown_cell_fl', help='Provide unknown cell matrix file that is need to be assigned with cell type.')
 
     parser.add_argument('-SVM', dest='SVM_marker',help='Decide to generate the SVM markers.'
                                                        'Default: -SVM yes')
@@ -340,6 +340,10 @@ def main(argv=None):
 
     ##we need to generate an output to collect all the prediction from the independent datasets
 
+    ##collect the model to the output dir
+
+
+
     #############################
     ##Step 3 identify SHAP marker
     #############################
@@ -357,11 +361,16 @@ def main(argv=None):
     if not os.path.exists(Step3_identify_marker_w_dir):
         os.makedirs(Step3_identify_marker_w_dir)
 
+    ##create a dir in the major output_dir to store the SHAP markers output
+    opt_SHAP_markers_dir = output_dir + '/opt_SHAP_markers_dir'
+    if not os.path.exists(opt_SHAP_markers_dir):
+        os.makedirs(opt_SHAP_markers_dir)
+
     if args.known_marker_fl is not None:
         known_marker_fl = args.known_marker_fl
         cmd = 'python ' + s3_pipeline_identify_SHAP_marker_script + \
               ' -d ' + Step3_identify_marker_w_dir + \
-              ' -o ' + output_dir + \
+              ' -o ' + opt_SHAP_markers_dir + \
               ' -m ' + Step2_train_models_o_dir + '/rf_model.pkl' + \
               ' -exp_fl ' + Step2_train_models_o_dir + '/opt_exp_indep_test.csv' + \
               ' -meta_fl ' + Step2_train_models_o_dir + '/opt_meta_indep_test.csv' + \
@@ -438,6 +447,11 @@ def main(argv=None):
         if not os.path.exists(Step4_2_identify_SVM_marker_o_dir):
             os.makedirs(Step4_2_identify_SVM_marker_o_dir)
 
+        ##create a dir to store the SVM markers
+        opt_SVM_markers_dir = output_dir + '/opt_SVM_markers_dir'
+        if not os.path.exists(opt_SVM_markers_dir):
+            os.makedirs(opt_SVM_markers_dir)
+
         if args.known_marker_fl is not None:
             known_marker_fl = args.known_marker_fl
 
@@ -446,7 +460,7 @@ def main(argv=None):
                   ' ' + known_marker_fl + \
                   ' ' + marker_number + \
                   ' ' + Step4_2_identify_SVM_marker_w_dir + \
-                  ' ' + Step4_2_identify_SVM_marker_w_dir + \
+                  ' ' + opt_SVM_markers_dir + \
                   ' ' + 'yes'
             subprocess.call(cmd,shell=True)
 
@@ -456,7 +470,7 @@ def main(argv=None):
                   ' ' + 'no_known_marker_provided' + \
                   ' ' + marker_number + \
                   ' ' + Step4_2_identify_SVM_marker_w_dir + \
-                  ' ' + Step4_2_identify_SVM_marker_w_dir + \
+                  ' ' + opt_SVM_markers_dir + \
                   ' ' + 'no'
             subprocess.call(cmd,shell=True)
 
@@ -483,6 +497,11 @@ def main(argv=None):
         if not os.path.exists(Step5_1_keep_same_feature_as_training_o_dir):
             os.makedirs(Step5_1_keep_same_feature_as_training_o_dir)
 
+        ##create a dir to store the prediction results
+        opt_prediction_dir = output_dir + '/opt_prediction_dir'
+        if not os.path.exists(opt_prediction_dir):
+            os.makedirs(opt_prediction_dir)
+
         cmd = 'python ' + s5_keep_same_feature_as_training + \
               ' ' + unknown_cell_fl + \
               ' ' + Step1_3_split_data_o_dir + '/opt_exp_indep_test.csv' + \
@@ -495,9 +514,9 @@ def main(argv=None):
         if not os.path.exists(Step5_2_make_prediction_dir):
             os.makedirs(Step5_2_make_prediction_dir)
 
-        Step5_2_make_prediction_o_dir = Step5_2_make_prediction_dir + '/Step5_2_make_prediction_o_dir'
-        if not os.path.exists(Step5_2_make_prediction_o_dir):
-            os.makedirs(Step5_2_make_prediction_o_dir)
+        #Step5_2_make_prediction_o_dir = Step5_2_make_prediction_dir + '/Step5_2_make_prediction_o_dir'
+        #if not os.path.exists(Step5_2_make_prediction_o_dir):
+        #    os.makedirs(Step5_2_make_prediction_o_dir)
 
         opt_exp_indep_test_path = Step5_1_keep_same_feature_as_training_o_dir + '/opt_final_testing_mtx.csv'
         opt_meta_train_path = ipt_cross_dataset_dir + '/a/opt_meta_train.csv'
@@ -512,7 +531,7 @@ def main(argv=None):
               rf_model_path + ' ' + \
               svm_model_path + ' ' + \
               opt_meta_train_path + ' ' + \
-              Step5_2_make_prediction_o_dir
+              opt_prediction_dir
         subprocess.call(cmd, shell=True)
 
 
