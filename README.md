@@ -39,7 +39,7 @@ The matrix row names are features/genes and column names are cell names
 | gene2    | 3     | 5     |3
 | gene3    | 3     | 5     |0
 
-**2. (optional) cell meta file (.csv)**
+**2. (optional) cell meta file (.csv)**  
 This file contains three columns. prob means probability that the cell will be assigned to the cell type. this prob value is obtained from ICI method. If it is not from the ICI method or other methods that could give a probability, we can use 1 to represent prop.  
 |  | cell_type | prob |
 | -------- | -------- | -------- |
@@ -79,7 +79,7 @@ UN means unknown
 ## Example Run 2
 ### Input data
 **1. Gene expression matrix file**  
-(ipt_test2_exp.csv)
+(ipt_test2_exp.csv)  
 **2. GFP marker gene name**  
 (eg. GFP_marker, the name 'GFP_marker' should be one of feature names in the ipt_test2_exp.csv)
 
@@ -102,7 +102,7 @@ c. opt_top_20_summary_marker_composition.txt
 '**novel_known**' means the output contains the novel and known markers at the same time.  
 '**marker_composition**' means among the 20 markers, how many of them are novel and how many of them are known markers.  
 
-**2.opt_prediction_dir**
+**2.opt_prediction_dir**  
 a. opt_prediction_RFindetest.txt  
 b. opt_prediction_SVMindetest.txt  
 **Note:**  
