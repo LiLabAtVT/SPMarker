@@ -60,11 +60,11 @@ UN means unknown
 ## Example Run 1
 ### Input data
 **1. Gene expression matrix file**  
-(ipt_test1_exp.csv)
+(ipt_test1_exp.csv)  
 **2. cell meta file**  
-(ipt_test1_meta.csv)
+(ipt_test1_meta.csv)  
 **3. unknown cell matrix**  
-(ipt_test1_unknown_exp.csv)
+(ipt_test1_unknown_exp.csv)  
 
 ### Running
 * > mkdir output_dir working_dir  
