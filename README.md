@@ -64,7 +64,7 @@ UN means unknown
 -d working_dir/ -o output_dir/ \\  
 -mtx ipt_test1_exp.csv \\  
 -meta ipt_test1_meta.csv \\  
--ukn_mtx ipt_test1_unknown_exp.csv\\  
+-ukn_mtx ipt_test1_unknown_exp.csv 
 
 **Outputs:**  
 
