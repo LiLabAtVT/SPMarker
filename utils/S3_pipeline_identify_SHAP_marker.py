@@ -181,7 +181,10 @@ def main(argv=None):
     ##this case has known marker fl
     store_final_top_marker_no_known_line_list, \
     store_final_top_marker_with_known_line_list, \
-    store_final_unis_top_feat_count_list = S3_2_assign_feature.generate_dir_to_store_sort_for_top_uni_fts(select_top_cell_type_sort_uni_fs_dir,
+    store_final_unis_top_feat_count_list, \
+    store_final_marker_no_known_line_list, \
+    store_final_marker_with_known_line_list, \
+    store_final_unis_feat_count_list= S3_2_assign_feature.generate_dir_to_store_sort_for_top_uni_fts(select_top_cell_type_sort_uni_fs_dir,
                                                                                                           marker_number,
                                                                                                           known_marker_fl)
 
@@ -198,6 +201,19 @@ def main(argv=None):
         for eachline in store_final_unis_top_feat_count_list:
             opt.write(eachline + '\n')
 
+    ##updating 051921
+    ##store all the features
+    with open (output_dir + '/opt_all_novel_marker.txt','w+') as opt:
+        for eachline in store_final_marker_no_known_line_list:
+            opt.write(eachline + '\n')
+
+    with open (output_dir + '/opt_all_novel_known_marker.txt', 'w+') as opt:
+        for eachline in store_final_marker_with_known_line_list:
+            opt.write(eachline + '\n')
+
+    with open(output_dir + '/opt_all_summary_marker_composition.txt', 'w+') as opt:
+        for eachline in store_final_unis_feat_count_list:
+            opt.write(eachline + '\n')
 
 if __name__ == "__main__":
     main()

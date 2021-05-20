@@ -207,6 +207,13 @@ def generate_dir_to_store_sort_for_top_uni_fts (select_top_cell_type_sort_uni_fs
     ##store final top marker with known markers
     store_final_top_marker_with_known_line_list = []
 
+    ##updating 051921
+    ##save all the marker instead of the top markers
+    store_final_unis_feat_count_list = []
+    store_final_marker_no_known_line_list = []
+    store_final_marker_with_known_line_list = []
+
+
     sort_fl_list = glob.glob(select_top_cell_type_sort_uni_fs_dir + '/*')
     for eachsort_fl in sort_fl_list:
         mt = re.match('.+/(.+)', eachsort_fl)
@@ -229,8 +236,15 @@ def generate_dir_to_store_sort_for_top_uni_fts (select_top_cell_type_sort_uni_fs
         top_ori_marker_num = 0
         top_new_marker_num = 0
 
+        ##updating 051921
+        ori_marker_num = 0
+        new_marker_num = 0
+
         ##updation 052420
         store_top_feat_shap_uptop_num_line_list = []
+
+        ##updating 051921
+        store_feat_shap_uptop_num_line_list = []
 
         ##updation 052420
         shap_count = -1
@@ -260,6 +274,19 @@ def generate_dir_to_store_sort_for_top_uni_fts (select_top_cell_type_sort_uni_fs
                             with_known_marker_line = col[1] + '\t' + cell_type_nm + '\t' + 'Novel' + '\t' + col[2]
                             store_final_top_marker_with_known_line_list.append(with_known_marker_line)
 
+                    #################
+                    ##udpating 051921
+                    if col[1] in store_marker_gene_dic:
+                        ##updation 052620
+                        ori_marker_num += 1
+                        with_known_marker_line = col[1] + '\t' + cell_type_nm + '\t' + 'Known' + '\t' + col[2]
+                        store_final_marker_with_known_line_list.append(with_known_marker_line)
+                    else:
+                        ##updation 052620
+                        new_marker_num += 1
+                        with_known_marker_line = col[1] + '\t' + cell_type_nm + '\t' + 'Novel' + '\t' + col[2]
+                        store_final_marker_with_known_line_list.append(with_known_marker_line)
+
                 ##updation 052420
                 ##do not contain any marker gene and select the top 20
                 if col[1] not in store_marker_gene_dic:
@@ -272,11 +299,31 @@ def generate_dir_to_store_sort_for_top_uni_fts (select_top_cell_type_sort_uni_fs
                             no_known_marker_line = col[1] + '\t' + cell_type_nm + '\t' + 'Novel' + '\t' + col[2]
                             store_final_top_marker_no_known_line_list.append(no_known_marker_line)
 
+                #################
+                ##updating 051921
+                ##consider all features
+                if col[1] not in store_marker_gene_dic:
+                    shap_count += 1
+                    if shap_count != 0:
+                        store_feat_shap_uptop_num_line_list.append(eachline)
+                        ##updating 051821 add the value
+                        no_known_marker_line = col[1] + '\t' + cell_type_nm + '\t' + 'Novel' + '\t' + col[2]
+                        store_final_marker_no_known_line_list.append(no_known_marker_line)
+
+
         ##updation 052620 calculate the unis shap and orim markers
         ##store top marker gene information
         final_line = cell_type_nm + '\t' + 'Known_maker_feature' + '\t' + str(top_ori_marker_num) + '\n' + \
                      cell_type_nm + '\t' + 'Novel_marker_feature' + '\t' + str(top_new_marker_num)
         store_final_unis_top_feat_count_list.append(final_line)
 
+        ##updating 051921
+        ##consider all features
+        final_line = cell_type_nm + '\t' + 'Known_maker_feature' + '\t' + str(ori_marker_num) + '\n' + \
+                     cell_type_nm + '\t' + 'Novel_marker_feature' + '\t' + str(new_marker_num)
+        store_final_unis_feat_count_list.append(final_line)
 
-    return (store_final_top_marker_no_known_line_list,store_final_top_marker_with_known_line_list,store_final_unis_top_feat_count_list)
+    return (store_final_top_marker_no_known_line_list,store_final_top_marker_with_known_line_list,store_final_unis_top_feat_count_list,
+            store_final_marker_no_known_line_list,store_final_marker_with_known_line_list,store_final_unis_feat_count_list)
+
+
