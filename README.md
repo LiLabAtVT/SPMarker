@@ -96,11 +96,15 @@ UN means unknown
 a. opt_top_20_novel_known_marker.txt  
 b. opt_top_20_novel_marker.txt  
 c. opt_top_20_summary_marker_composition.txt  
+d. opt_all_novel_known_marker.txt  
+e. opt_all_novel_marker.txt  
+f. opt_all_summary_marker_composition.txt  
 **Note:**  
 '**top_20**' means users define they want to select the top 20 markers based on the feature importance values.  
 '**novel**' means the predicted markers are novel markers. If users do not provide known marker file using '-kmar_fl', all the markers will be labeled as novel.  
 '**novel_known**' means the output contains the novel and known markers at the same time.  
 '**marker_composition**' means among the 20 markers, how many of them are novel and how many of them are known markers.  
+'**all**' means the results report all markers intead of top markers.
 
 **2.opt_prediction_dir**  
 a. opt_prediction_RFindetest.txt  
