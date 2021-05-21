@@ -62,6 +62,10 @@ def get_parsed_args():
     parser.add_argument('-SVM', dest='SVM_marker',help='Decide to generate the SVM markers.'
                                                        'Default: -SVM yes')
 
+    ##updating 052121
+    parser.add_argument('-feat_fl',dest="feature_file",help="Provide the features that will be kept in the expression file that is used for the training."
+                                                            "If users do not provide the argument, we will use all the features.")
+
     #parser.add_argument("-SPmarker_dir" ,dest="SPmarker_directory",help="Provide the path to the SPmarker_directory")
 
     #parser.add_argument("-merged_obj", dest="merged_object", help="Provide merged object generated from Seurat.")
@@ -168,6 +172,13 @@ def main(argv=None):
 
         if SVM_marker != 'yes' and SVM_marker != 'no':
             print ('Please use yes or no to open or close the identification of SVM markers')
+            return
+
+    if args.feature_file is not None:
+        try:
+            file = open(args.feature_file ,'r')
+        except IOError:
+            print('There was an error opening the feature_file!')
             return
 
     ###########################################
@@ -293,6 +304,30 @@ def main(argv=None):
         ############
         meta_fl_path = args.meta
         ############
+
+    ##udpating 052121
+    ##check whether we will select a part of features to be training
+    if args.feature_file is not None:
+
+        print ('Users choose to use picked features to do the training')
+
+        s1_select_feature_script = utils_dir + '/S1_2_select_feature.py'
+
+        ipt_feature_file = args.feature_file
+        ipt_expression_data = input_mtx_fl
+        ##create a dir under the working_dir
+        S1_2_select_feature_dir = working_dir + '/S1_2_select_feature_dir'
+        if not os.path.exists(S1_2_select_feature_dir):
+            os.makedirs(S1_2_select_feature_dir)
+
+        cmd = 'python ' + s1_select_feature_script + \
+              ' ' + ipt_expression_data + \
+              ' ' + ipt_feature_file + \
+              ' ' + S1_2_select_feature_dir
+        subprocess.call(cmd,shell=True)
+
+        input_mtx_fl = S1_2_select_feature_dir + '/opt_select_feat_exp.csv'
+
 
     ##splite the dataset
     s1_split_dataset_script = utils_dir + '/S1_3_split_dataset_to_train_cv_indetest.py'
