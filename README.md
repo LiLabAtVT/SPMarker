@@ -74,9 +74,28 @@ UN means unknown
 -meta ipt_test1_meta.csv \\  
 -ukn_mtx ipt_test1_unknown_exp.csv  
 
-
-
 ## Example Run 2
+**1. Gene expression matrix file**  
+(ipt_test1_exp.csv)  
+**2. cell meta file**  
+(ipt_test1_meta.csv)  
+**3. unknown cell matrix**  
+(ipt_test1_unknown_exp.csv)  
+**4. selected_features.csv**  
+(ipt_test1_selected_features.csv)  
+
+### Running
+* > mkdir output_dir working_dir  
+* > python SPmarker.py \\  
+-d working_dir/ -o output_dir/ \\  
+-mtx ipt_test1_exp.csv \\  
+-meta ipt_test1_meta.csv \\  
+-ukn_mtx ipt_test1_unknown_exp.csv \\  
+-feat_fl ipt_test1_selected_features.csv
+
+
+
+## Example Run 3
 ### Input data
 **1. Gene expression matrix file**  
 (ipt_test2_exp.csv)  
