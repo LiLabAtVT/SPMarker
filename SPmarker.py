@@ -28,6 +28,8 @@ def get_parsed_args():
                                                         'Please make sure the gene name do not contain space. '
                                                         'Otherwise, the gene name will be transfered to a name with "_" connected')
 
+    parser.add_argument('-ukn_mtx', dest='unknown_cell_fl', help='Provide unknown cell matrix file that is need to be assigned with cell type.')
+
     ##optional parameters
     parser.add_argument('-m', dest='marker', help='Provide a marker that would help to define cell identity.')
 
@@ -57,7 +59,6 @@ def get_parsed_args():
     parser.add_argument("-kmar_fl", dest="known_marker_fl", help="Provide the known marker gene list file. Once users provide this file, "
                                                                  "they will obtain a file that contains novel marker genes.")
 
-    parser.add_argument('-ukn_mtx', dest='unknown_cell_fl', help='Provide unknown cell matrix file that is need to be assigned with cell type.')
 
     parser.add_argument('-SVM', dest='SVM_marker',help='Decide to generate the SVM markers.'
                                                        'Default: -SVM yes')
@@ -90,11 +91,21 @@ def main(argv=None):
     ##check the required software and files
     ##for the input files
     if args.exp_matrix is None:
-        print('Cannot find merged object, please provide it')
+        print('Cannot find expression matrix, please provide it')
         return
     else:
         try:
             file = open(args.exp_matrix, 'r')  ##check if the file is not the right file
+        except IOError:
+            print('There was an error opening the matrix file!')
+            return
+
+    if args.unknown_cell_fl is None:
+        print('Cannot find unknown matrix file, please provide it')
+        return
+    else:
+        try:
+            file = open(args.unknown_cell_fl, 'r')  ##check if the file is not the right file
         except IOError:
             print('There was an error opening the matrix file!')
             return
