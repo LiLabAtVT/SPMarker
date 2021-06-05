@@ -132,6 +132,78 @@ b. opt_prediction_SVMindetest.txt
 '**RF**' means the prediction of cell types on unknown cells are based on Random Forest model.  
 '**SVM**' means the prediction of cell types on unknown cells are based on Support Vector Machine model.  
 
+# Usage
+```
+usage:
+**SPmarker**  
+SPmarker.py [-h] required: [-d working_dir][-o output_dir]
+                           [-mtx expression_matrix_file]
+                           [-ukn_mtx unknown_expression_matrix_file]
+                           ([-m marker_name]|[-meta meta_file])
+                 optional: [-bns no][-bns_ratio 1:1][-cv_num 5]
+                           [-indep_ratio 0.1][-eval_score MCC]
+                           [-mar_num 20][-kmar_fl known_marker_file]
+                           [-SVM yes][-feat_fl feature_file]
+
+arguments:
+-h, --help        Show this help message and exit.
+
+-d                Working directory to store intermediate files of each step. 
+                  Default: ./ .
+
+-o                Output directory to store the output files. 
+                  Default: ./ .
+
+-mtx              Training expression matrix file.
+                  Rowname is gene, and column name is cell barcode.
+                  Please make sure the gene name do not contain space. Otherwise, the gene name will be transfered to a name with "_" connected.
+
+-ukn_mtx          An expression matrix file with cells that need to be annotated. 
+                  Please keep same format as 'Expression matrix file'.
+                  If the genes have different orders as training matrix, the SPmarker will automatically keep the same feature orders between the unknown matrix and training matrix.
+                  If there are some genes missing in the unknown matrix compared to the training matrix, this tool will assign '0' across all cells for this gene.
+
+-m                Provide a marker name such as a name form an internal GFP marker. 
+                  This marker will assign the GFP-related cell identity to a cell where reads can map to this GFP marker.
+                  If users provide '-m', '-meta' cannot be provided.
+
+-bns              Balance the matrix of cell identities. This option works only when -m is initiated.
+
+-bns_ratio        Provide a ratio of cell number from different identities.
+                  For example, if users set the ratio to be 1:1, they must initiate the '-m' to assign a GFP-related cell identity to cells (eg. 500) where reads can map to this GFP marker. 
+                  If there are 2000 cells not be assigned, SPmarker will sample 500 cells from these 1000 cells to allow the ratio to be 1:1. 
+                  If users set ratio to be 1:2, SPmarker will sample 1000 cells.
+                  Default: 1:1.
+
+-meta             Provide a meta that contains known cell identity for all cells in the training matrix.
+                  If the '-meta' is initiated, we should not provide '-m'.
+
+-cv_num           Initiate x fold cross validation.
+                  Default: 5.
+
+-indep_ratio      Provide ratio of cells from independent dataset to all cells.
+                  For example. If users provide 1000 cells in the '-mtx', SPmarker will sample 100 cells to be independent dataset (default).
+                  Default: 0.1.
+
+-eval_score       Provide a type of evaluation score to decide the best model that will be used for marker identification.
+                  Default: MCC.
+
+-mar_num          Provide the number of top candidate marker users want to extract as output markers from each cell type.
+                  Default: 20.
+                  If the feature number is below 20, we will extract all the features under the cell type.
+
+-kmar_fl          Provide the known marker gene list file. 
+                  Once users provide this file, they will obtain a file that only contains novel marker genes.
+                  
+-SVM              Decide to generate the SVM markers.
+                  Default: -SVM yes.
+
+-feat_fl          Provide the features that will be kept in the expression file that is used for the training.
+                  If users do not provide the argument, we will use all the features from the training matrix (-mtx).
+
+
+                      
+
 
 
 ## Appendix and FAQ
