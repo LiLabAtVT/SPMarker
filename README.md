@@ -5,7 +5,7 @@ SPmarker
 SPmarker is a machine learning based approach for identification of marker genes and classification of cells in plant tissues
 
 # Introduction
-An essential facet of the single-cell RNA sequencing (scRNA-seq) studies is to use marker genes that distinguish heterogeneous cell populations and dissect biological functions of each cell. In plants, the scRNA-seq focused mostly on the understood Arabidopsis root system. However, few suitable computational methodologies aid the identification of the novel marker genes in the root system. Here, we introduce SPmarker, a machine learning based method to identify the marker genes via identifying their feature importance from Random Forests (RF) model using the SHapley Additive exPlanations (SHAP) package (SHAP markers).
+In order to dissect the biological functions of each individual cells, an essential step in the analysis of single-cell RNA sequencing data is to classify specific cell types with marker genes. In this study, we have developed a machine learning pipeline called Single cell Predictive markers (SPmarker) to assign cell types and to identify novel cell-type marker genes in the Arabidopsis root. Our method can (1) assign cell types based on cells that were labeled using published methods, (2) project cell types identified by trajectory analysis from one dataset to other datasets, and (3) assign cell types based on internal GFP markers. Using SPmarker, we have identified hundreds of new marker genes and majority of these machine learning-derived marker genes were not identified before. As compared to known marker genes, we have found more orthologous genes of these new marker genes in corresponding rice single cell clusters. We have also found 172 new marker genes for Trichoblast in five non-Arabidopsis species, which expands the number of marker genes for this cell type by 35-154%. Our results represent a new approach to identify cell-type marker genes from scRNA-seq data and pave the way for cross-species mapping of scRNA-seq data in plants. 
 
 # Dependence and requirements
 SPmarker is developed in Python with modules and external tools.
@@ -21,7 +21,7 @@ For information about installing the dependencies, please see below. The version
 **itertools** (python package; Developed and tested with version 2.3)  
 **sklearn** (python package; Developed and tested with version 0.22.2)  
 **shap** (python package; Developed and tested with version 0.35.0)  
-#**Seurat** (R package; Developed and tested with version 3.0)
+**keras** (python package; Developed and tested with version 2.4.3)  
 
 # Quick Start
 ## Installation
