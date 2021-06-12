@@ -18,12 +18,21 @@ For information about installing the dependencies, please see below. The version
 
 ## Requirements
 **Python** (v3.0 or more; Developed and tested with version 3.7.1)  
-**pandas** (python package; Developed and tested with version 0.24.2)  
-**numpy** (python package; Developed and tested with version 1.16.4)  
-**itertools** (python package; Developed and tested with version 2.3)  
-**sklearn** (python package; Developed and tested with version 0.22.2)  
-**shap** (python package; Developed and tested with version 0.35.0)  
+**pandas** (python package; Developed and tested with version 1.1.1)  
+**sklearn** (python package; Developed and tested with version 0.24.2)  
+**shap** (python package; Developed and tested with version 0.39.0)  
 **keras** (python package; Developed and tested with version 2.4.3)  
+
+## Use conda to install required packages (Recommend)  
+conda create -n py37 python=3.7  
+conda activate py37  
+conda install pandas  
+conda install scikit-learn  
+conda install -c conda-forge shap  
+conda install keras  
+
+
+
 
 # Quick Start
 ## Installation
