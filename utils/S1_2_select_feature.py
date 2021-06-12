@@ -19,11 +19,11 @@ def extract_marker_gene (input_exp_dt,input_variable_gene_list_fl):
             if count != 1:
                 col = eachline.strip().split(',')
 
-                if re.match('"(.+)"',col[1]):
-                    mt = re.match('"(.+)"',col[1])
+                if re.match('"(.+)"',col[0]):
+                    mt = re.match('"(.+)"',col[0])
                     feat = mt.group(1)
                 else:
-                    feat = col[1]
+                    feat = col[0]
                 store_variable_gene_dic[feat] = 1
 
     exp_line_list = []
