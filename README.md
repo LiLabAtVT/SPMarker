@@ -151,7 +151,7 @@ UN means unknown
 * > python SPmarker.py \\  
 -d working_dir/ -o output_dir/ \\  
 -mtx ipt_test2_gene_cell_mtx.csv \\  
--m GFP_marker \\  
+-m GFP_marker  
 
 ## Outputs
 **1. opt_SHAP_markers_dir and opt_SVM_markers_dir**  
