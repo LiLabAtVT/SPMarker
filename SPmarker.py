@@ -28,11 +28,22 @@ def get_parsed_args():
                                                         'Please make sure the gene name do not contain space. '
                                                         'Otherwise, the gene name will be transfered to a name with "_" connected')
 
-    parser.add_argument('-ukn_mtx', dest='unknown_cell_fl', help='Provide unknown cell matrix file that is need to be assigned with cell type.')
-
     ##optional parameters
+    parser.add_argument('-mlist',dest='marker_list', help='Provide marker list with two columns seperated by space or tab.'
+                                                           'First column is geneID,'
+                                                           'Second column is celltype.')
+
     parser.add_argument('-m', dest='marker', help='Provide a marker that would help to define cell identity.')
 
+    parser.add_argument('-meta',dest='meta',help= 'Provide a meta that contains known cell identity.'
+                                                  'If the -meta is initiated, we should not provide -m')
+
+    parser.add_argument('-ukn_mtx', dest='unknown_cell_fl', help='Provide unknown cell matrix file that is need to be assigned with cell type.')
+
+    parser.add_argument('-feat_fl',dest="feature_file",help="Provide the features that will be kept in the expression file that is used for the training."
+                                                            "If users do not provide the argument, we will use all the features.")
+
+    ##other parameters
     parser.add_argument('-bns', dest='keep_balance', help='Balance the matrix of cell identities. This option works only -m is initiated.'
                                                           'Default: -bns no')
 
@@ -41,11 +52,9 @@ def get_parsed_args():
                                                                                  'it will sample same number of non-marker labeled cells as the marker labeled cells.'
                                                                                  'Default: 1:1. Left 1 is marker labeled cell identity')
 
-    parser.add_argument('-meta',dest='meta',help= 'Provide a meta that contains known cell identity.'
-                                                  'If the -meta is initiated, we should not provide -m')
-
     parser.add_argument('-cv_num',dest='cross_vali_num',help='Initiate x fold cross validation.'
                                                              'Default: 5')
+
     parser.add_argument('-indep_ratio',dest='indep_ratio',help='Provide ratio of independent dataset.'
                                                                'Default: 0.1')
 
@@ -56,16 +65,17 @@ def get_parsed_args():
                                                                 "Default is 20."
                                                                 "If the feature number is below 20, we will extract all the features under the cell type.")
 
-    parser.add_argument("-kmar_fl", dest="known_marker_fl", help="Provide the known marker gene list file. Once users provide this file, "
-                                                                 "they will obtain a file that contains novel marker genes.")
+    ##updating 101221 this marker fl is replaced by -mlist
+    #parser.add_argument("-kmar_fl", dest="known_marker_fl", help="Provide the known marker gene list file. Once users provide this file, "
+    #                                                             "they will obtain a file that contains novel marker genes.")
 
 
     parser.add_argument('-SVM', dest='SVM_marker',help='Decide to generate the SVM markers.'
                                                        'Default: -SVM yes')
 
     ##updating 052121
-    parser.add_argument('-feat_fl',dest="feature_file",help="Provide the features that will be kept in the expression file that is used for the training."
-                                                            "If users do not provide the argument, we will use all the features.")
+    #parser.add_argument('-feat_fl',dest="feature_file",help="Provide the features that will be kept in the expression file that is used for the training."
+    #                                                        "If users do not provide the argument, we will use all the features.")
 
     #parser.add_argument("-SPmarker_dir" ,dest="SPmarker_directory",help="Provide the path to the SPmarker_directory")
 
@@ -90,6 +100,7 @@ def main(argv=None):
     #######################################
     ##check the required software and files
     ##for the input files
+    ##the exp_matrix must be provided
     if args.exp_matrix is None:
         print('Cannot find expression matrix, please provide it')
         return
@@ -100,37 +111,61 @@ def main(argv=None):
             print('There was an error opening the matrix file!')
             return
 
-    if args.unknown_cell_fl is None:
-        print('Cannot find unknown matrix file, please provide it')
-        return
+    ##three options to provide the meta file
+    if args.meta is not None:
+        print('A meta file is provided that contains cell annotation.')
+        try:
+            file = open(args.meta, 'r')  ##check if the file is not the right file
+        except IOError:
+            print('There was an error opening the matrix file!')
+            return
+
+        if args.marker_list is not None:
+
+            print('A known marker list is provided, and SPmarker will return novel candidate markers')
+
+            try:
+                file = open(args.marker_list, 'r')  ##check if the file is not the right file
+            except IOError:
+                print('There was an error opening the matrix file!')
+                return
+
+            if args.marker is not None:
+                print('Do not provide marker once marker list has been provided')
+                return
+
     else:
+
+        if args.marker_list is not None:
+
+            print('A known marker list is provided that will be used to create a candidate meta file with cell annotation.')
+
+            try:
+                file = open(args.marker_list, 'r')  ##check if the file is not the right file
+            except IOError:
+                print('There was an error opening the matrix file!')
+                return
+
+            if args.marker is not None:
+                print('Do not provide marker once marker list has been provided')
+                return
+
+        else:
+
+            if args.marker is not None:
+                print('Single marker is provided that will be used to create a candidate meta file.')
+
+            else:
+                print('Please provide meta, marker list or single marker information.')
+                return
+
+    ##updating 101221 set the unknown cell fl to be optional choice
+    if args.unknown_cell_fl is not None:
         try:
             file = open(args.unknown_cell_fl, 'r')  ##check if the file is not the right file
         except IOError:
             print('There was an error opening the matrix file!')
             return
-
-    if args.marker is None:
-
-        ##the meta file must be provided
-        if args.meta is None:
-            print('Cannot find marker or meta information, please provide one of them')
-            return
-
-        else:
-            try:
-                file = open(args.meta, 'r')  ##check if the file is not the right file
-            except IOError:
-                print('There was an error opening the meta file!')
-                return
-
-    else:
-        if args.meta is not None:
-            print ('Cannot provide marker and meta at the same time')
-            return
-
-        else:
-            print('Users choose to provide marker: ' + args.marker + ' to generate cell identities')
 
     if args.ratio_of_balance is None:
         ratio_of_balance = '1:1'
@@ -140,20 +175,6 @@ def main(argv=None):
             return
         else:
             ratio_of_balance = args.ratio_of_balance
-
-    if args.known_marker_fl is not None:
-        try:
-            file = open(args.known_marker_fl ,'r')
-        except IOError:
-            print('There was an error opening the known marker file!')
-            return
-
-    if args.unknown_cell_fl is not None:
-        try:
-            file = open(args.unknown_cell_fl, 'r')
-        except IOError:
-            print('There was an error opening the unknown cell file!')
-            return
 
     if args.cross_vali_num is None:
         cross_vali_num = '5'
@@ -258,63 +279,98 @@ def main(argv=None):
     input_mtx_fl = Step1_prepare_data_dir + '/temp_modified_gene_matrix.csv'
 
 
-    if args.marker is not None:
-        print ('Users choose to provide marker to assign identity')
-        target_marker = args.marker
-        s1_use_marker_cell_idenity_script = utils_dir + '/S1_1_use_marker_cell_identity.py'
+    ##start to prepare the training dataset
+    if args.meta is not None:
 
-        Step1_1_generate_meta_dir = Step1_prepare_data_dir + '/Step1_1_generate_meta_dir'
-        if not os.path.exists(Step1_1_generate_meta_dir):
-            os.makedirs(Step1_1_generate_meta_dir)
-        Step1_1_generate_meta_o_dir = Step1_1_generate_meta_dir + '/output_dir'
-        if not os.path.exists(Step1_1_generate_meta_o_dir):
-            os.makedirs(Step1_1_generate_meta_o_dir)
-
-        cmd = 'python ' + s1_use_marker_cell_idenity_script + \
-              ' ' + input_mtx_fl + \
-              ' ' + Step1_1_generate_meta_o_dir + \
-              ' ' + target_marker
-        subprocess.call(cmd,shell=True)
-        #print ('The meta file has been created with three columns: cellnames,identity,probability')
-
-        meta_fl_path = Step1_1_generate_meta_o_dir + '/opt_all_meta.csv'
-
-        if args.keep_balance == 'yes':
-            print ('Users choose to keep balance of cell identities of the meta file')
-
-            s1_keep_balance_of_meta_script = utils_dir + '/S1_2_keep_balance_of_meta.py'
-
-            Step1_2_keep_balance_of_meta_dir = Step1_prepare_data_dir + '/Step1_2_keep_balance_of_meta_dir'
-            if not os.path.exists(Step1_2_keep_balance_of_meta_dir):
-                os.makedirs(Step1_2_keep_balance_of_meta_dir)
-
-            Step1_2_keep_balance_of_meta_o_dir = Step1_2_keep_balance_of_meta_dir + '/output_dir'
-            if not os.path.exists(Step1_2_keep_balance_of_meta_o_dir):
-                os.makedirs(Step1_2_keep_balance_of_meta_o_dir)
-
-            cmd = 'python ' + s1_keep_balance_of_meta_script + \
-                  ' ' + input_mtx_fl + \
-                  ' ' + meta_fl_path + \
-                  ' ' + ratio_of_balance + \
-                  ' ' + Step1_2_keep_balance_of_meta_o_dir
-            subprocess.call(cmd,shell=True)
-
-            ##we need to update the meta_fl_path and input_mtx_fl
-            opt_fl_list = glob.glob(Step1_2_keep_balance_of_meta_o_dir + '/*')
-            for eachfl in opt_fl_list:
-                mt = re.match('.+/(.+)',eachfl)
-                flnm = mt.group(1)
-                if 'balance_meta' in flnm:
-                    meta_fl_path = eachfl
-                if 'balance_exp' in flnm:
-                    input_mtx_fl = eachfl
-
-    else:
         print ('Users choose to provide meta file')
 
         ############
         meta_fl_path = args.meta
         ############
+
+    else:
+
+        if args.marker_list is not None:
+            print('A known marker list is provided that will be used to create a candidate meta file with cell annotation.')
+
+            marker_list_fl = args.marker_list
+            s1_0_use_markerlist_cell_identity_script = utils_dir + '/S1_0_use_markerlist_cell_identity.py'
+            S1_0_use_markerlist_cell_identity_R_script = utils_dir + '/S1_0_use_markerlist_cell_identity.R'
+
+            Step1_0_generate_meta_dir = Step1_prepare_data_dir + '/Step1_0_generate_meta_dir'
+            if not os.path.exists(Step1_0_generate_meta_dir):
+                os.makedirs(Step1_0_generate_meta_dir)
+            Step1_0_generate_meta_o_dir = Step1_0_generate_meta_dir + '/output_dir'
+            if not os.path.exists(Step1_0_generate_meta_o_dir):
+                os.makedirs(Step1_0_generate_meta_o_dir)
+
+            cmd = 'python ' + s1_0_use_markerlist_cell_identity_script + \
+                  ' ' + input_mtx_fl + \
+                  ' ' + Step1_0_generate_meta_o_dir + \
+                  ' ' + marker_list_fl + \
+                  ' ' + S1_0_use_markerlist_cell_identity_R_script
+            subprocess.call(cmd,shell=True)
+
+            ##put the file of meta fl here
+            meta_fl_path = Step1_0_generate_meta_o_dir + '/opt_meta.csv'
+
+        else:
+
+            if args.marker is not None:
+                print('Single marker is provided that will be used to create a candidate meta file.')
+
+                target_marker = args.marker
+                s1_use_marker_cell_idenity_script = utils_dir + '/S1_1_use_marker_cell_identity.py'
+
+                Step1_1_generate_meta_dir = Step1_prepare_data_dir + '/Step1_1_generate_meta_dir'
+                if not os.path.exists(Step1_1_generate_meta_dir):
+                    os.makedirs(Step1_1_generate_meta_dir)
+                Step1_1_generate_meta_o_dir = Step1_1_generate_meta_dir + '/output_dir'
+                if not os.path.exists(Step1_1_generate_meta_o_dir):
+                    os.makedirs(Step1_1_generate_meta_o_dir)
+
+                cmd = 'python ' + s1_use_marker_cell_idenity_script + \
+                      ' ' + input_mtx_fl + \
+                      ' ' + Step1_1_generate_meta_o_dir + \
+                      ' ' + target_marker
+                subprocess.call(cmd, shell=True)
+                # print ('The meta file has been created with three columns: cellnames,identity,probability')
+
+                meta_fl_path = Step1_1_generate_meta_o_dir + '/opt_all_meta.csv'
+
+                if args.keep_balance == 'yes':
+                    print('Users choose to keep balance of cell identities of the meta file')
+
+                    s1_keep_balance_of_meta_script = utils_dir + '/S1_2_keep_balance_of_meta.py'
+
+                    Step1_2_keep_balance_of_meta_dir = Step1_prepare_data_dir + '/Step1_2_keep_balance_of_meta_dir'
+                    if not os.path.exists(Step1_2_keep_balance_of_meta_dir):
+                        os.makedirs(Step1_2_keep_balance_of_meta_dir)
+
+                    Step1_2_keep_balance_of_meta_o_dir = Step1_2_keep_balance_of_meta_dir + '/output_dir'
+                    if not os.path.exists(Step1_2_keep_balance_of_meta_o_dir):
+                        os.makedirs(Step1_2_keep_balance_of_meta_o_dir)
+
+                    cmd = 'python ' + s1_keep_balance_of_meta_script + \
+                          ' ' + input_mtx_fl + \
+                          ' ' + meta_fl_path + \
+                          ' ' + ratio_of_balance + \
+                          ' ' + Step1_2_keep_balance_of_meta_o_dir
+                    subprocess.call(cmd, shell=True)
+
+                    ##we need to update the meta_fl_path and input_mtx_fl
+                    opt_fl_list = glob.glob(Step1_2_keep_balance_of_meta_o_dir + '/*')
+                    for eachfl in opt_fl_list:
+                        mt = re.match('.+/(.+)', eachfl)
+                        flnm = mt.group(1)
+                        if 'balance_meta' in flnm:
+                            meta_fl_path = eachfl
+                        if 'balance_exp' in flnm:
+                            input_mtx_fl = eachfl
+
+            else:
+                print('Please provide meta, marker list or single marker information.')
+                return
 
     ##udpating 052121
     ##check whether we will select a part of features to be training
@@ -391,8 +447,6 @@ def main(argv=None):
 
     ##collect the model to the output dir
 
-
-
     #############################
     ##Step 3 identify SHAP marker
     #############################
@@ -415,8 +469,8 @@ def main(argv=None):
     if not os.path.exists(opt_SHAP_markers_dir):
         os.makedirs(opt_SHAP_markers_dir)
 
-    if args.known_marker_fl is not None:
-        known_marker_fl = args.known_marker_fl
+    if args.marker_list is not None:
+        known_marker_fl = args.marker_list
         cmd = 'python ' + s3_pipeline_identify_SHAP_marker_script + \
               ' -d ' + Step3_identify_marker_w_dir + \
               ' -o ' + opt_SHAP_markers_dir + \
@@ -501,8 +555,8 @@ def main(argv=None):
         if not os.path.exists(opt_SVM_markers_dir):
             os.makedirs(opt_SVM_markers_dir)
 
-        if args.known_marker_fl is not None:
-            known_marker_fl = args.known_marker_fl
+        if args.marker_list is not None:
+            known_marker_fl = args.marker_list
 
             cmd = 'python ' + s4_generate_SVM_markers_script + \
                   ' ' + S4_1_generate_imp_for_built_o_SVM + \
