@@ -32,7 +32,7 @@ for (i in 1:length(max_order)){
   results[cellname,2] <- corr_val
 }
 
-write.csv(results,paste0(ipt_output_dir,'/opt_meta.csv'))
+write.csv(results,paste0(ipt_output_dir,'/opt_meta.csv'),quote = F)
 
 
 
