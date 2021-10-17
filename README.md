@@ -1,4 +1,5 @@
 
+
 SPmarker
 ===
 SPmarker is a machine learning based approach for identification of marker genes and classification of cells in plant tissues
@@ -151,7 +152,6 @@ UN means unknown
 -d working_dir/ -o output_dir/ \\  
 -mtx ipt_test2_gene_cell_mtx.csv \\  
 -m GFP_marker \\  
--ukn_mtx ipt_test2_unknown_exp.csv  
 
 ## Outputs
 **1. opt_SHAP_markers_dir and opt_SVM_markers_dir**  
