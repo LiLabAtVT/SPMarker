@@ -1,5 +1,4 @@
 
-
 SPmarker
 ===
 SPmarker is a machine learning based approach for identification of marker genes and classification of cells in plant tissues
@@ -61,7 +60,7 @@ Note: This file contains three columns. prob means probability that the cell wil
 | cell2    | celltype1     | 0.8     |
 | cell3     | celltype2     | 0.6     |
 
-**Optional b.** marker gene list file (.txt)
+**Optional b.** marker gene list file (.txt)  
 Note: SPmarker will utilize a correlation-based method to predict cell identities that will be used for generate a meta file.
 | gene | cell_type |
 | -------- | -------- |
