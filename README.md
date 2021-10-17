@@ -48,15 +48,30 @@ The matrix row names are features/genes and column names are cell names
 | -------- | ----- | ----- | ----- |
 | gene1    | 2   | 1     | 2
 | gene2    | 3     | 5     |3
-| gene3    | 3     | 5     |0
+| gene3    | 3     | 5     |0  
 
-**2. (optional) cell meta file (.csv)**  
-This file contains three columns. prob means probability that the cell will be assigned to the cell type. this prob value is obtained from ICI method. If it is not from the ICI method or other methods that could give a probability, we can use 1 to represent prop.  
+
+**2. (mandatory) Provide cell meta file OR marker gene list file OR both**  
+
+**Optional a.** cell meta file (.csv)  
+Note: This file contains three columns. prob means probability that the cell will be assigned to the cell type. this prob value is obtained from ICI method. If it is not from the ICI method or other methods that could give a probability, we can use 1 to represent prop.  
 |  | cell_type | prob |
 | -------- | -------- | -------- |
 | cell1    | celltype1     | 1     |
 | cell2    | celltype1     | 0.8     |
 | cell3     | celltype2     | 0.6     |
+
+**Optional b.** marker gene list file (.txt)
+Note: SPmarker will utilize a correlation-based method to predict cell identities that will be used for generate a meta file.
+| gene | cell_type |
+| -------- | -------- |
+| gene1    | celltype1     |
+| gene1    | celltype1     | 
+| gene2     | celltype2     | 
+| gene3     | celltype3     | 
+
+**Optional c.** cell meta file (.csv) and marker gene list file (.txt)
+Note: If users provide both files, the final output will return novel markers that do not contain the markers provided in the marker gene list file.
 
 **3. (optional) unknown cell matrix (.csv)**  
 UN means unknown
@@ -66,58 +81,76 @@ UN means unknown
 | gene2    | 3     | 5     |3
 | gene3    | 3     | 5     |0
 
-**Note**: Users must provide **optional 2** or **optional 3**.
-
-## Example Run 1
+## Example Run 1: Already have a meta file
 ### Input data
 **1. Gene expression matrix file**  
-(ipt_test1_exp.csv)  
+(ipt_test1_gene_cell_mtx.csv)  
 **2. cell meta file**  
 (ipt_test1_meta.csv)  
-**3. unknown cell matrix**  
-(ipt_test1_unknown_exp.csv)  
-
 ### Running
 * > mkdir output_dir working_dir  
 * > python SPmarker.py \\  
 -d working_dir/ -o output_dir/ \\  
--mtx ipt_test1_exp.csv \\  
+-mtx ipt_test1_gene_cell_mtx.csv \\  
+-meta ipt_test1_meta.csv  
+
+## Example Run 2: Use provided markers to generate a meta file
+### Input data
+**1. Gene expression matrix file**  
+(ipt_test1_gene_cell_mtx.csv)  
+**2. marker gene list file**  
+(ipt_test1_marker_list.txt)  
+### Running
+* > mkdir output_dir working_dir  
+* > python SPmarker.py \\  
+-d working_dir/ -o output_dir/ \\  
+-mtx ipt_test1_gene_cell_mtx.csv \\  
+-mlist ipt_test1_marker_list.txt  
+
+
+## Example Run 3: Use selected genes to do the training
+### Input data
+**1. Gene expression matrix file**  
+(ipt_test1_gene_cell_mtx.csv)  
+**2. cell meta file**  
+(ipt_test1_meta.csv)  
+**3. selected_features.csv**  
+(ipt_test1_selected_features.csv)  
+### Running
+* > mkdir output_dir working_dir  
+* > python SPmarker.py \\  
+-d working_dir/ -o output_dir/ \\  
+-mtx ipt_test1_gene_cell_mtx.csv \\  
+-meta ipt_test1_meta.csv \\  
+-feat_fl ipt_test1_selected_features.csv
+
+## Example Run 4: Predict unknown cells
+### Input data
+**1. Gene expression matrix file**  
+(ipt_test1_gene_cell_mtx.csv)  
+**2. cell meta file**  
+(ipt_test1_meta.csv)  
+**3. unknown cell matrix**  
+(ipt_test1_unknown_exp.csv)  
+### Running
+* > mkdir output_dir working_dir  
+* > python SPmarker.py \\  
+-d working_dir/ -o output_dir/ \\  
+-mtx ipt_test1_gene_cell_mtx.csv \\  
 -meta ipt_test1_meta.csv \\  
 -ukn_mtx ipt_test1_unknown_exp.csv  
 
-## Example Run 2
-**1. Gene expression matrix file**  
-(ipt_test1_exp.csv)  
-**2. cell meta file**  
-(ipt_test1_meta.csv)  
-**3. unknown cell matrix**  
-(ipt_test1_unknown_exp.csv)  
-**4. selected_features.csv**  
-(ipt_test1_selected_features.csv)  
-
-### Running
-* > mkdir output_dir working_dir  
-* > python SPmarker.py \\  
--d working_dir/ -o output_dir/ \\  
--mtx ipt_test1_exp.csv \\  
--meta ipt_test1_meta.csv \\  
--ukn_mtx ipt_test1_unknown_exp.csv \\  
--feat_fl ipt_test1_selected_features.csv
-
-
-
-## Example Run 3
+## Example Run 5: User a GFP marker to generate a meta file
 ### Input data
 **1. Gene expression matrix file**  
-(ipt_test2_exp.csv)  
+(ipt_test2_gene_cell_mtx.csv)  
 **2. GFP marker gene name**  
 (eg. GFP_marker, the name 'GFP_marker' should be one of feature names in the ipt_test2_exp.csv)
-
 ### Running
 * > mkdir output_dir working_dir  
 * > python SPmarker.py \\  
 -d working_dir/ -o output_dir/ \\  
--mtx ipt_test2_exp.csv \\  
+-mtx ipt_test2_gene_cell_mtx.csv \\  
 -m GFP_marker \\  
 -ukn_mtx ipt_test2_unknown_exp.csv  
 
