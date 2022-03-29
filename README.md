@@ -72,7 +72,6 @@ Note: SPmarker will utilize a correlation-based method to predict cell identitie
 | gene | cell_type |
 | -------- | -------- |
 | gene1    | celltype1     |
-| gene1    | celltype1     | 
 | gene2     | celltype2     | 
 | gene3     | celltype3     | 
 
