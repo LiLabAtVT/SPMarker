@@ -58,8 +58,9 @@ def get_parsed_args():
     parser.add_argument('-indep_ratio',dest='indep_ratio',help='Provide ratio of independent dataset.'
                                                                'Default: 0.1')
 
-    parser.add_argument('-eval_score',dest='type_eval_score',help='Provide a type of evaluation score to decide the best model that will be used for marker identification.'
-                                                                  'Default: MCC')
+    parser.add_argument('-eval_score',dest='type_eval_score',help='Bascially, we will use the all the training dataset to identify markers'
+                                                                  'If users provide a specific evaluation score such as MCC in this argument, SPmarker will use this score to decide the best model that will be used for marker identification.'
+                                                                  'Default: All')
 
     parser.add_argument("-mar_num", dest="marker_number", help="Provide the candidate marker number users want to extract from each cell type."
                                                                 "Default is 20."
@@ -186,8 +187,9 @@ def main(argv=None):
     else:
         indep_ratio = args.indep_ratio
 
+    ##updating 033022 change the MCC to All
     if args.type_eval_score is None:
-        type_eval_score = 'MCC'
+        type_eval_score = 'All'
     else:
         type_eval_score = args.type_eval_score
 
@@ -436,11 +438,13 @@ def main(argv=None):
 
     ipt_cross_dataset_dir = Step1_3_split_data_o_dir + '/step2_split_train_cross_val_opt_dir/output_dir'
 
+    ##updating 033022 add s1 input data
     cmd = 'python ' + s2_train_model_script + \
           ' ' + ipt_cross_dataset_dir + \
           ' ' + type_eval_score + \
           ' ' + Step2_train_models_o_dir + \
-          ' ' + Step2_train_models_w_dir
+          ' ' + Step2_train_models_w_dir + \
+          ' ' + Step1_3_split_data_o_dir + '/step1_split_train_indetest_opt_dir'
     subprocess.call(cmd,shell=True)
 
     ##we need to generate an output to collect all the prediction from the independent datasets
