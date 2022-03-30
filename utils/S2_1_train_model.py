@@ -451,8 +451,8 @@ def select_best_model (input_opt_store_model_dir,final_output_dir,collect_opt_di
         ipt_exp_test_fl = step1_split_train_indetest_opt_dir + '/opt_exp_test.csv'
         ipt_meta_test_fl = step1_split_train_indetest_opt_dir + '/opt_meta_test.csv'
 
-        ipt_inde_exp_test_fl = step1_split_train_indetest_opt_dir + '/opt_exp_indep_test.csv'
-        ipt_inde_meta_test_fl = step1_split_train_indetest_opt_dir + '/opt_meta_indep_test.csv'
+        ipt_inde_exp_test_fl = step1_split_train_indetest_opt_dir + '/opt_exp_test.csv'
+        ipt_inde_meta_test_fl = step1_split_train_indetest_opt_dir + '/opt_meta_test.csv'
 
         train_evaluation(ipt_exp_train_fl, ipt_exp_test_fl, ipt_meta_train_fl, ipt_meta_test_fl,
                          ipt_inde_exp_test_fl, ipt_inde_meta_test_fl, opt_use_all_train_data_dir)
