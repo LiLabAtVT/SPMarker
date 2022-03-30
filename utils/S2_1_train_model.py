@@ -30,9 +30,11 @@ from sklearn.metrics import roc_curve, auc
 
 
 input_S2_split_cross_val_o_dir = sys.argv[1] ##03_split_dataset_to_train_cv_indetest_013021/output_dir/step2_split_train_cross_val_opt_dir/output_dir
-evaluation_score = sys.argv[2] ##default: MCC
+evaluation_score = sys.argv[2] ##default: All. We can also use the MCC
 input_output_dir = sys.argv[3]
 input_working_dir = sys.argv[4]
+##updating 033022
+step1_split_train_indetest_opt_dir = sys.argv[5]
 
 ##updating 020521 add a function to write out cells
 def writeout_compare_file (labels_pred,labels_test,meta_test,id_nm_dic,input_opt_dir,testing_type):
@@ -407,29 +409,57 @@ def extract_output (input_opt_dir,output_dir,method_list):
                         subprocess.call(cmd,shell=True)
 
 
-def select_best_model (input_opt_store_model_dir,final_output_dir,collect_opt_dir,eval_score_nm,model_nm):
+def select_best_model (input_opt_store_model_dir,final_output_dir,collect_opt_dir,eval_score_nm,model_nm,
+                       step1_split_train_indetest_opt_dir,input_working_dir):
 
-    store_rep_nm_dic = {} ##key is the rep_nm and value is the eval score
-    opt_eval_score_fl_list = glob.glob(collect_opt_dir + '/' + model_nm + '/testing/*')
-    for eacheval_score_fl in opt_eval_score_fl_list:
 
-        mt = re.match('.+/(.+)',eacheval_score_fl)
-        fl_nm = mt.group(1)
+    ##updating 033022 decide whether we will use specific score to decide the best model
+    if eval_score_nm != 'All':
 
-        mt = re.match('opt_(.+)_class_evaluation_score\.txt',fl_nm)
-        rep_nm = mt.group(1)
+        store_rep_nm_dic = {} ##key is the rep_nm and value is the eval score
+        opt_eval_score_fl_list = glob.glob(collect_opt_dir + '/' + model_nm + '/testing/*')
+        for eacheval_score_fl in opt_eval_score_fl_list:
 
-        dt = pd.read_csv(eacheval_score_fl,sep='\t')
-        ##updation 060620 change the mean_eval_score to the sum_eval_score since MCC has negative value
-        sum_eval_score = dt[eval_score_nm].sum(axis=0)
+            mt = re.match('.+/(.+)',eacheval_score_fl)
+            fl_nm = mt.group(1)
 
-        store_rep_nm_dic[rep_nm] = float(sum_eval_score)
+            mt = re.match('opt_(.+)_class_evaluation_score\.txt',fl_nm)
+            rep_nm = mt.group(1)
 
-    largest_rep_nm = max(store_rep_nm_dic, key=store_rep_nm_dic.get)
+            dt = pd.read_csv(eacheval_score_fl,sep='\t')
+            ##updation 060620 change the mean_eval_score to the sum_eval_score since MCC has negative value
+            sum_eval_score = dt[eval_score_nm].sum(axis=0)
 
-    ##cp the best model the final_output_dir
-    cmd = 'cp ' +  input_opt_store_model_dir + '/' + largest_rep_nm + '/' + model_nm + '_model.pkl ' + final_output_dir
-    subprocess.call(cmd,shell=True)
+            store_rep_nm_dic[rep_nm] = float(sum_eval_score)
+
+        largest_rep_nm = max(store_rep_nm_dic, key=store_rep_nm_dic.get)
+
+        ##cp the best model the final_output_dir
+        cmd = 'cp ' +  input_opt_store_model_dir + '/' + largest_rep_nm + '/' + model_nm + '_model.pkl ' + final_output_dir
+        subprocess.call(cmd,shell=True)
+
+    else:
+        ##if the eval_score_nm == All
+        ##we will use all the training dataset to train
+        ##create a dir to store the new training information
+        opt_use_all_train_data_dir = input_working_dir + '/opt_use_all_train_data_dir'
+        if not os.path.exists(opt_use_all_train_data_dir):
+            os.makedirs(opt_use_all_train_data_dir)
+
+        ipt_exp_train_fl = step1_split_train_indetest_opt_dir + '/opt_exp_train.csv'
+        ipt_meta_train_fl = step1_split_train_indetest_opt_dir + '/opt_meta_train.csv'
+        ipt_exp_test_fl = step1_split_train_indetest_opt_dir + '/opt_exp_test.csv'
+        ipt_meta_test_fl = step1_split_train_indetest_opt_dir + '/opt_meta_test.csv'
+
+        ipt_inde_exp_test_fl = step1_split_train_indetest_opt_dir + '/opt_exp_indep_test.csv'
+        ipt_inde_meta_test_fl = step1_split_train_indetest_opt_dir + '/opt_meta_indep_test.csv'
+
+        train_evaluation(ipt_exp_train_fl, ipt_exp_test_fl, ipt_meta_train_fl, ipt_meta_test_fl,
+                         ipt_inde_exp_test_fl, ipt_inde_meta_test_fl, opt_use_all_train_data_dir)
+
+        ##collect the models to final_output_dir
+        cmd = 'cp ' + opt_use_all_train_data_dir + '/' + model_nm + '_model.pkl ' + final_output_dir
+        subprocess.call(cmd,shell=True)
 
 
 
@@ -475,7 +505,8 @@ def train_models (input_S2_split_cross_val_o_dir,input_output_dir):
 ###########################
 ##collect model performance
 #print('Step 5 Collect model performance')
-def collect_model_performance (input_output_dir,S3_train_model_eval_o_dir,input_working_dir,evaluation_score):
+def collect_model_performance (input_output_dir,S3_train_model_eval_o_dir,input_working_dir,evaluation_score,step1_split_train_indetest_opt_dir):
+
     S4_collect_res_o_dir = input_output_dir + '/S4_collect_res_o_dir'
     if not os.path.exists(S4_collect_res_o_dir):
         os.makedirs(S4_collect_res_o_dir)
@@ -490,10 +521,10 @@ def collect_model_performance (input_output_dir,S3_train_model_eval_o_dir,input_
     ##rf is used to compare to select the best model for detecting the SHAP markers
     ##svm model is used to extract feature importance to generate SVM markers
     ##we need to compare performance of each model using the testing evaluation
-    select_best_model(S3_train_model_eval_o_dir, input_output_dir, S4_collect_res_o_dir, evaluation_score,'rf')
+    select_best_model(S3_train_model_eval_o_dir, input_output_dir, S4_collect_res_o_dir, evaluation_score,'rf',step1_split_train_indetest_opt_dir,input_working_dir)
 
     ##updating also select best for the svm
-    select_best_model(S3_train_model_eval_o_dir, input_output_dir, S4_collect_res_o_dir, evaluation_score, 'svm')
+    select_best_model(S3_train_model_eval_o_dir, input_output_dir, S4_collect_res_o_dir, evaluation_score, 'svm',step1_split_train_indetest_opt_dir,input_working_dir)
 
     ##we need to cp all the svm models to the output_dir
     ##generate a output in the final output dir
@@ -518,4 +549,4 @@ def collect_model_performance (input_output_dir,S3_train_model_eval_o_dir,input_
 
 
 train_models (input_S2_split_cross_val_o_dir,input_output_dir)
-collect_model_performance (input_output_dir,input_output_dir + '/S3_train_model_eval_o_dir',input_working_dir,evaluation_score)
+collect_model_performance (input_output_dir,input_output_dir + '/S3_train_model_eval_o_dir',input_working_dir,evaluation_score,step1_split_train_indetest_opt_dir)
