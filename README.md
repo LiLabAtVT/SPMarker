@@ -52,13 +52,13 @@ conda install keras
 
 ## Required input data
 **1. (mandatory) Gene expression matrix file (.csv)**  
-The matrix row names are features/genes and column names are cell names  
+Note: The matrix row names are features/genes and column names are cell names. The value here shows normalized read count of each cell mapping to the genes. It is recommended for users to use ‘SCTransform’ in Seurat tool (Citation) to normalize the gene expression for each cell.   
 
 |  | cell1 | cell2 | cell3 |
 | -------- | ----- | ----- | ----- |
-| gene1    | 2   | 1     | 2
-| gene2    | 3     | 5     |3
-| gene3    | 3     | 5     |0  
+| gene1    | 2.1   | 1.2     | 2.7
+| gene2    | 3.3     | 5.7     |3.2
+| gene3    | 3.6     | 5.2     |0  
 
 
 **2. (mandatory) Provide cell meta file OR marker gene list file OR both**  
@@ -87,11 +87,11 @@ Note: If users provide both files, the final output will return novel markers th
 UN means unknown
 |  | UNcell1 | UNcell2 | UNcell3 |
 | -------- | ----- | ----- | ----- |
-| gene1    | 2   | 1     | 2
-| gene2    | 3     | 5     |3
-| gene3    | 3     | 5     |0
+| gene1    | 3.6   | 4.5     | 1.1
+| gene2    | 7.3     | 0     |1.8
+| gene3    | 2.1     | 0     |8.1
 
-## Example Run 1: Already have a meta file
+## **Example Run 1, Identify novel cell-type marker genes**
 ### Input data
 **1. Gene expression matrix file**  
 (ipt_test1_gene_cell_mtx.csv)  
@@ -104,12 +104,8 @@ UN means unknown
 -mtx ipt_test1_gene_cell_mtx.csv \\  
 -meta ipt_test1_meta.csv  
 
-## Example Run 2: Use provided markers to generate a meta file
-### Input data
-**1. Gene expression matrix file**  
-(ipt_test1_gene_cell_mtx.csv)  
-**2. marker gene list file**  
-(ipt_test1_marker_list.txt)  
+## Other options:  
+**Case 1:** if users do not have meta file and instead they have a marker gene list file (ipt_test1_marker_list.txt).  
 ### Running
 * > mkdir output_dir working_dir  
 * > python SPmarker.py \\  
@@ -117,24 +113,57 @@ UN means unknown
 -mtx ipt_test1_gene_cell_mtx.csv \\  
 -mlist ipt_test1_marker_list.txt  
 
-
-## Example Run 3: Use selected genes to do the training
-### Input data
-**1. Gene expression matrix file**  
-(ipt_test1_gene_cell_mtx.csv)  
-**2. cell meta file**  
-(ipt_test1_meta.csv)  
-**3. selected_features.csv**  
-(ipt_test1_selected_features.csv)  
+**Case 2:** Change independent testing data size and cross-validation setting. SPmarker will divide the provided cells to training and independent datasets based on the ‘-indep_ratio’. The default setting is ‘0.1’ which means if users provide 1000 cells in the ‘-mtx’, SPmarker will sample 100 cells to be independent dataset. Also, the SPmarker automatically uses five-fold cross validation to do the training, and users can change it using ‘-cv_num’. If users want to use a set of genes/features other than all features during training, they can use ‘-feat_fl’.  
 ### Running
 * > mkdir output_dir working_dir  
 * > python SPmarker.py \\  
 -d working_dir/ -o output_dir/ \\  
 -mtx ipt_test1_gene_cell_mtx.csv \\  
 -meta ipt_test1_meta.csv \\  
--feat_fl ipt_test1_selected_features.csv
+-indep_ratio 0.1 \\  
+-cv_num 5 \\  
+-feat_fl ipt_test1_selected_features.csv  
 
-## Example Run 4: Predict unknown cells
+**Case 3:** Identify novel markers. The above command lines could also generate a candidate new marker list with default top 20 markers for each cell type. Users can change the number by setting ‘-mar_num’. If users use ‘-SVM’, the SPmarker will return markers based on Support Vector Machine (SVM) approach. If users provide a known marker list using ‘-kmar_fl’, SPmarker will return a novel marker list that does not include the provided known markers.
+### Running
+* > mkdir output_dir working_dir  
+* > python SPmarker.py \\  
+-d working_dir/ -o output_dir/ \\  
+-mtx ipt_test1_gene_cell_mtx.csv \\  
+-meta ipt_test1_meta.csv \\  
+-indep_ratio 0.1 \\  
+-cv_num 5 \\  
+-mar_num 20 \\  
+-SVM yes \\  
+-kmar_fl ipt_test1_known_marker_list.txt  
+
+
+## Example Run 2: Identify novel cell-type marker genes based on a GFP marker
+When users provide a GFP marker name presented in the gene expression matrix, SPmarker can label cells by identifying cells where the GFP marker expressed. Briefly, for GFP-tagged cells, the SPmarker will label cells as ‘positive’ because these cells contain reads that can map to the GFP gene, and other cells without GFP reads as ‘negative’ examples. 
+### Input data
+**1. Gene expression matrix file**  
+(ipt_test2_gene_cell_mtx.csv)  
+**2. GFP marker gene name**  
+(eg. GFP_marker, the name 'GFP_marker' should be one of feature names in the ipt_test2_exp.csv)
+### Running
+* > mkdir output_dir working_dir  
+* > python SPmarker.py \\  
+-d working_dir/ -o output_dir/ \\  
+-mtx ipt_test2_gene_cell_mtx.csv \\  
+-m GFP_marker_name  
+## Other options:  
+**Case 1:** For assigning the ‘negative’ cells, SPmarker will keep balance of positive and negative cells by setting ‘-bns_ratio’. If users want to allow number of ‘negative’ cells to have two times of ‘positive’ cells, they can use ‘-bns_ratio 1:2’.   
+### Running
+* > mkdir output_dir working_dir  
+* > python SPmarker.py \\  
+-d working_dir/ -o output_dir/ \\  
+-mtx ipt_test2_gene_cell_mtx.csv \\  
+-m GFP_marker_name \\  
+-bns yes \\  
+-bns_ratio 1:1  
+
+## Example Run 3: Assign unknown cells  
+After building the classifiers, SPmarker can assign the cell identities if users provide a gene expression matrix including unknown cells. If the genes have different orders as training matrix, the SPmarker will automatically keep the same feature orders between the unknown matrix and training matrix. If there are some genes missing in the unknown matrix compared to the training matrix, this tool will assign '0' across all cells for this gene.  
 ### Input data
 **1. Gene expression matrix file**  
 (ipt_test1_gene_cell_mtx.csv)  
@@ -150,18 +179,6 @@ UN means unknown
 -meta ipt_test1_meta.csv \\  
 -ukn_mtx ipt_test1_unknown_exp.csv  
 
-## Example Run 5: User a GFP marker to generate a meta file
-### Input data
-**1. Gene expression matrix file**  
-(ipt_test2_gene_cell_mtx.csv)  
-**2. GFP marker gene name**  
-(eg. GFP_marker, the name 'GFP_marker' should be one of feature names in the ipt_test2_exp.csv)
-### Running
-* > mkdir output_dir working_dir  
-* > python SPmarker.py \\  
--d working_dir/ -o output_dir/ \\  
--mtx ipt_test2_gene_cell_mtx.csv \\  
--m GFP_marker  
 
 ## Outputs
 **1. opt_SHAP_markers_dir and opt_SVM_markers_dir**  
