@@ -52,7 +52,7 @@ conda install keras
 
 ## Required input data
 **1. (mandatory) Gene expression matrix file (.csv)**  
-Note: The matrix row names are features/genes and column names are cell names. The value here shows normalized read count of each cell mapping to the genes. It is recommended for users to use ‘SCTransform’ in Seurat tool (Citation) to normalize the gene expression for each cell.   
+Note: The matrix row names are features/genes and column names are cell names. The value here shows normalized read count of each cell mapping to the genes. It is recommended for users to use ‘SCTransform’ in Seurat tool (https://satijalab.org/seurat/articles/sctransform_vignette.html) to normalize the gene expression for each cell.   
 
 |  | cell1 | cell2 | cell3 |
 | -------- | ----- | ----- | ----- |
