@@ -1,12 +1,10 @@
 
-
 SPmarker
 ===
 SPmarker is a machine learning based approach for identification of marker genes and classification of cells in plant tissues
 
-Current release: 07/09/23 v0.3
-
-Current release: 10/17/21 v0.2
+Current release: 07/09/23 v0.3  
+Current release: 10/17/21 v0.2  
 
 If you use SPmarker in your own study, please consider citing the following article:  
 
@@ -212,7 +210,7 @@ SPmarker.py [-h] required: [-d working_dir][-o output_dir]
                            [-mtx expression_matrix_file]
                            [-ukn_mtx unknown_expression_matrix_file]
                            ([-m marker_name]|[-meta meta_file])
-                 optional: [-bns no][-bns_ratio 1:1][-cv_num 5]
+                 optional: [-lowestCellN 50][-bns no][-bns_ratio 1:1][-cv_num 5]
                            [-indep_ratio 0.1][-eval_score MCC]
                            [-mar_num 20][-kmar_fl known_marker_file]
                            [-SVM yes][-feat_fl feature_file]
@@ -238,6 +236,10 @@ arguments:
 -m                Provide a marker name such as a name form an internal GFP marker. 
                   This marker will assign the GFP-related cell identity to a cell where reads can map to this GFP marker.
                   If users provide '-m', '-meta' cannot be provided.
+
+-lowestCellN      If users provide a marker list, please provide an additional cell number cutoff, 
+                  which enables the predicted cell type having number of cells above this cutoff.
+                  Default: 50.
 
 -bns              Balance the matrix of cell identities. This option works only when -m is initiated.
 
