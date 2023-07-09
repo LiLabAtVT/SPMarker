@@ -5,6 +5,7 @@ SPmarker
 SPmarker is a machine learning based approach for identification of marker genes and classification of cells in plant tissues
 
 Current release: 07/09/23 v0.3
+
 Current release: 10/17/21 v0.2
 
 If you use SPmarker in your own study, please consider citing the following article:  
