@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+##updating 070923 set an option to filter the cell types with less than a specified cell number
+
 ##this script will use the Rscript to
 ##conduct analysis on the Step 1 to 3.
 ##1. prepare data and generate meta file
@@ -34,6 +36,12 @@ def get_parsed_args():
                                                            'Second column is celltype.')
 
     parser.add_argument('-m', dest='marker', help='Provide a marker that would help to define cell identity.')
+
+    ##updating 070923
+    parser.add_argument('-lowestCellN', dest='lowest_cell_num_per_celltype', default = '50',help='If users provide a marker list, '
+                                                                                                 'please provide an additional cell number cutoff,'
+                                                                                                 ' which enables the predicted cell type having number of cells above this cutoff.'
+                                                                                                 'Default: 50')
 
     parser.add_argument('-meta',dest='meta',help= 'Provide a meta that contains known cell identity.'
                                                   'If the -meta is initiated, we should not provide -m')
@@ -316,6 +324,98 @@ def main(argv=None):
             ##put the file of meta fl here
             meta_fl_path = Step1_0_generate_meta_o_dir + '/opt_meta.csv'
 
+
+
+            ##updating 070923
+            print('Check if the cell number per cell type is above the cell number cutoff')
+            if args.lowest_cell_num_per_celltype is not None:
+                cellnum_cutoff = args.lowest_cell_num_per_celltype
+                print('Users provide a lowest cell num cutoff: ' + cellnum_cutoff)
+            else:
+                cellnum_cutoff = '50'
+                print('Users use the default lowest cell num cutoff: ' + '50')
+
+            store_celltype_cellnum_dic = {}
+            count = 0
+            with open(meta_fl_path, 'r') as ipt:
+                for eachline in ipt:
+                    eachline = eachline.strip('\n')
+                    col = eachline.strip().split(',')
+                    count += 1
+                    if count != 1:
+                        celltype = col[1]
+                        if celltype in store_celltype_cellnum_dic:
+                            store_celltype_cellnum_dic[celltype] += 1
+                        else:
+                            store_celltype_cellnum_dic[celltype] = 1
+
+            store_celltype_pass_cellnumcutoff_dic = {}
+            for eachcelltype in store_celltype_cellnum_dic:
+                cellnum = store_celltype_cellnum_dic[eachcelltype]
+                if cellnum >= int(cellnum_cutoff):
+                    store_celltype_pass_cellnumcutoff_dic[eachcelltype] = 1
+
+            store_final_line_list = []
+            store_target_cell_dic = {}
+            count = 0
+            with open(meta_fl_path, 'r') as ipt:
+                for eachline in ipt:
+                    eachline = eachline.strip('\n')
+                    col = eachline.strip().split(',')
+                    count += 1
+                    if count != 1:
+                        celltype = col[1]
+                        cellnm = col[0]
+                        if celltype in store_celltype_pass_cellnumcutoff_dic:
+                            store_final_line_list.append(eachline)
+                            store_target_cell_dic[cellnm] = 1
+                    else:
+                        store_final_line_list.append(eachline)
+
+            with open(Step1_0_generate_meta_o_dir + '/opt_all_meta_flt_celltype.csv', 'w+') as opt:
+                for eachline in store_final_line_list:
+                    opt.write(eachline + '\n')
+
+            ##assign new meta fl path
+            meta_fl_path = Step1_0_generate_meta_o_dir + '/opt_all_meta_flt_celltype.csv'
+
+            ##allow the matrix has the same cell name
+            store_final_line_list = []
+            store_order_list = []
+            count = 0
+            with open(input_mtx_fl, 'r') as ipt:
+                for eachline in ipt:
+                    eachline = eachline.strip('\n')
+                    col = eachline.strip().split(',')
+                    count += 1
+                    if count == 1:
+
+                        store_new_header_sample_list = []
+                        for i in range(1, len(col)):
+                            if col[i] in store_target_cell_dic:
+                                store_order_list.append(i)
+                                store_new_header_sample_list.append(col[i])
+
+                        final_line = ',' + ','.join(store_new_header_sample_list)
+                        store_final_line_list.append(final_line)
+
+                    else:
+
+                        store_new_val_list = []
+                        for eachorder in store_order_list:
+                            val = col[eachorder]
+                            store_new_val_list.append(val)
+
+                        final_line = col[0] + ',' + ','.join(store_new_val_list)
+                        store_final_line_list.append(final_line)
+
+            with open(Step1_0_generate_meta_o_dir + '/temp_gene_cell_exp_mtx_flt_celltype.csv', 'w+') as opt:
+                for eachline in store_final_line_list:
+                    opt.write(eachline + '\n')
+
+            input_mtx_fl = Step1_0_generate_meta_o_dir + '/temp_gene_cell_exp_mtx_flt_celltype.csv'
+
+
         else:
 
             if args.marker is not None:
@@ -339,6 +439,98 @@ def main(argv=None):
                 # print ('The meta file has been created with three columns: cellnames,identity,probability')
 
                 meta_fl_path = Step1_1_generate_meta_o_dir + '/opt_all_meta.csv'
+
+                ##updating 070923
+                print('Check if the cell number per cell type is above the cell number cutoff')
+                if args.lowest_cell_num_per_celltype is not None:
+                    cellnum_cutoff = args.lowest_cell_num_per_celltype
+                    print('Users provide a lowest cell num cutoff: ' + cellnum_cutoff)
+                else:
+                    cellnum_cutoff = '50'
+                    print('Users use the default lowest cell num cutoff: ' + '50')
+
+                store_celltype_cellnum_dic = {}
+                count = 0
+                with open (meta_fl_path,'r') as ipt:
+                    for eachline in ipt:
+                        eachline = eachline.strip('\n')
+                        col = eachline.strip().split(',')
+                        count += 1
+                        if count != 1:
+                            celltype = col[1]
+                            if celltype in store_celltype_cellnum_dic:
+                                store_celltype_cellnum_dic[celltype] += 1
+                            else:
+                                store_celltype_cellnum_dic[celltype] = 1
+
+                store_celltype_pass_cellnumcutoff_dic = {}
+                for eachcelltype in store_celltype_cellnum_dic:
+                    cellnum = store_celltype_cellnum_dic[eachcelltype]
+                    if cellnum >= int(cellnum_cutoff):
+                        store_celltype_pass_cellnumcutoff_dic[eachcelltype] = 1
+
+                store_final_line_list = []
+                store_target_cell_dic = {}
+                count = 0
+                with open (meta_fl_path,'r') as ipt:
+                    for eachline in ipt:
+                        eachline = eachline.strip('\n')
+                        col = eachline.strip().split(',')
+                        count += 1
+                        if count != 1:
+                            celltype = col[1]
+                            cellnm = col[0]
+                            if celltype in store_celltype_pass_cellnumcutoff_dic:
+                                store_final_line_list.append(eachline)
+                                store_target_cell_dic[cellnm] = 1
+                        else:
+                            store_final_line_list.append(eachline)
+
+                with open (Step1_1_generate_meta_o_dir + '/opt_all_meta_flt_celltype.csv','w+') as opt:
+                    for eachline in store_final_line_list:
+                        opt.write(eachline + '\n')
+
+                ##assign new meta fl path
+                meta_fl_path = Step1_1_generate_meta_o_dir + '/opt_all_meta_flt_celltype.csv'
+
+                ##allow the matrix has the same cell name
+                store_final_line_list = []
+                store_order_list = []
+                count = 0
+                with open (input_mtx_fl,'r') as ipt:
+                    for eachline in ipt:
+                        eachline = eachline.strip('\n')
+                        col = eachline.strip().split(',')
+                        count += 1
+                        if count == 1:
+
+                            store_new_header_sample_list = []
+                            for i in range(1,len(col)):
+                                if col[i] in store_target_cell_dic:
+                                    store_order_list.append(i)
+                                    store_new_header_sample_list.append(col[i])
+
+                            final_line = ',' + ','.join(store_new_header_sample_list)
+                            store_final_line_list.append(final_line)
+
+                        else:
+
+                            store_new_val_list = []
+                            for eachorder in store_order_list:
+                                val = col[eachorder]
+                                store_new_val_list.append(val)
+
+                            final_line = col[0] + ',' + ','.join(store_new_val_list)
+                            store_final_line_list.append(final_line)
+
+                with open (Step1_1_generate_meta_o_dir + '/temp_gene_cell_exp_mtx_flt_celltype.csv','w+') as opt:
+                    for eachline in store_final_line_list:
+                        opt.write(eachline + '\n')
+
+                input_mtx_fl = Step1_1_generate_meta_o_dir + '/temp_gene_cell_exp_mtx_flt_celltype.csv'
+
+
+
 
                 if args.keep_balance == 'yes':
                     print('Users choose to keep balance of cell identities of the meta file')
